@@ -186,10 +186,10 @@
         btn.classList.add('active');
     }
 
-    // 요리 계산 로직 (원래 정밀 버전)
     function runCookCalc() {
         const targetSets = parseInt(document.getElementById('targetSets').value);
         const setUnit = 64; 
+        const bigChestSlots = 54; // 마인크래프트 큰 상자 슬롯 수
         const totalAmount = targetSets * setUnit;
         const minPrice = parseInt(document.getElementById('minPrice').value);
         const currentPrice = parseInt(document.getElementById('currentPrice').value) || 0;
@@ -204,7 +204,7 @@
             { id: 'g', name: '마늘', avg: 2.5, reqPerBase: 8 }    
         ];
 
-        let cropHtml = '<h3>📊 농작물 상세 분석 (전체 세트 기준)</h3><table><thead><tr><th>필요 재료</th><th>총 필요 베이스 (세트)</th><th>총 필요 작물 (세트)</th><th>평균 필요 씨앗 (세트)</th></tr></thead><tbody>';
+        let cropHtml = '<h3>📊 농작물 상세 분석 (전체 세트 기준)</h3><table><thead><tr><th>필요 재료</th><th>총 필요 베이스 (세트)</th><th>총 필요 작물 (세트)</th><th>평균 필요 씨앗 (세트 / 큰상자)</th></tr></thead><tbody>';
         const sel = document.getElementById('dishSelect').options[document.getElementById('dishSelect').selectedIndex];
 
         crops.forEach(c => {
@@ -212,15 +212,19 @@
             if (baseNeededPerDish > 0) {
                 const totalBase = totalAmount * baseNeededPerDish;
                 const totalCrops = totalBase * c.reqPerBase;
-                // '왕 크니까 왕 좋아' 로직: 대왕 작물 7배 수확 확률 반영
                 const expPerSeed = c.avg * (1 - bigProb) + (c.avg * 7 * bigProb);
                 const totalSeeds = Math.ceil(totalCrops / expPerSeed);
+                
+                // 세트 단위 계산
+                const seedSets = (totalSeeds / setUnit).toFixed(1);
+                // 큰 상자 단위 계산 (54슬롯 * 64개 = 3,456개)
+                const chestCount = (totalSeeds / (bigChestSlots * setUnit)).toFixed(2);
 
                 cropHtml += `<tr>
                     <td>${c.name}</td>
                     <td>${(totalBase / setUnit).toFixed(1)} 세트</td>
                     <td>${(totalCrops / setUnit).toFixed(1)} 세트</td>
-                    <td>약 ${(totalSeeds / setUnit).toFixed(1)} 세트</td>
+                    <td>약 ${(totalSeeds / setUnit).toFixed(1)} 세트 <br><small>(${chestCount} 상자)</small></td>
                 </tr>`;
             }
         });
